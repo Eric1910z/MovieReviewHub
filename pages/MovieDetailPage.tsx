@@ -9,6 +9,7 @@ import MovieList from '../components/MovieList';
 import CastMember from '../components/CastMember';
 import { AuthContext } from '../contexts/AuthContext';
 import { WatchlistContext } from '../contexts/WatchlistContext';
+import { useTranslation } from '../hooks/useTranslation';
 
 const initialReviews: Review[] = [
     { author: 'CinemaFan92', rating: 9.2, content: 'An absolute masterpiece! The visuals were stunning and the story was compelling. A must-watch!', createdAt: '2 days ago' },
@@ -28,6 +29,7 @@ const MovieDetailPage: React.FC = () => {
 
   const auth = useContext(AuthContext);
   const watchlist = useContext(WatchlistContext);
+  const { t } = useTranslation();
 
   const isMovieInWatchlist = movie ? watchlist?.isMovieInWatchlist(movie.id) : false;
 
@@ -81,7 +83,7 @@ const MovieDetailPage: React.FC = () => {
   }
 
   if (loading) return <Spinner />;
-  if (!movie) return <div className="text-center text-xl">Movie not found.</div>;
+  if (!movie) return <div className="text-center text-xl">{t('movie.not_found')}</div>;
 
   const backdropUrl = movie.backdrop_path ? `${IMAGE_BASE_URL}original${movie.backdrop_path}` : '';
   const posterUrl = movie.poster_path ? `${IMAGE_BASE_URL}w500${movie.poster_path}` : 'https://via.placeholder.com/500x750?text=No+Image';
@@ -89,50 +91,50 @@ const MovieDetailPage: React.FC = () => {
   return (
     <div>
       <div className="relative -mx-4 -mt-8 h-[60vh] max-h-[500px]">
-        <div className="absolute inset-0 bg-gradient-to-t from-gray-900 to-transparent"></div>
         {backdropUrl && <img src={backdropUrl} alt="" className="w-full h-full object-cover" />}
-        <div className="absolute inset-0 bg-black/50"></div>
+        <div className="absolute inset-0 bg-gradient-to-t from-slate-50 dark:from-slate-900 via-slate-50/20 dark:via-slate-900/40 to-transparent"></div>
+        <div className="absolute inset-0 bg-black/60"></div>
       </div>
       
       <div className="relative -mt-48 container mx-auto px-4">
         <div className="md:flex items-end md:space-x-8">
-            <div className="flex-shrink-0 w-1/2 md:w-1/4 max-w-[250px]">
+            <div className="flex-shrink-0 w-1/2 md:w-1/4 max-w-[250px] mx-auto md:mx-0">
                 <img src={posterUrl} alt={movie.title} className="rounded-lg shadow-2xl w-full" />
             </div>
-            <div className="mt-6 md:mt-0 text-left">
-                <h1 className="text-4xl lg:text-5xl font-black text-white">{movie.title}</h1>
-                <div className="flex items-center flex-wrap gap-x-4 gap-y-2 mt-2 text-gray-300">
+            <div className="mt-6 md:mt-0 text-center md:text-left">
+                <h1 className="text-4xl lg:text-5xl font-black text-slate-900 dark:text-white">{movie.title}</h1>
+                <div className="flex items-center justify-center md:justify-start flex-wrap gap-x-4 gap-y-2 mt-2 text-slate-600 dark:text-slate-300">
                     <span>{movie.release_date?.substring(0, 4)}</span>
                     <span>•</span>
                     <span>{movie.runtime} min</span>
                     <span>•</span>
                     <StarRating rating={movie.vote_average} />
-                    <span className="text-sm">({movie.vote_count.toLocaleString()} votes)</span>
+                    <span className="text-sm">({movie.vote_count.toLocaleString()} {t('movie.votes')})</span>
                 </div>
-                <div className="mt-4 flex flex-wrap gap-2">
+                <div className="mt-4 flex flex-wrap gap-2 justify-center md:justify-start">
                     {movie.genres.map(genre => (
-                        <span key={genre.id} className="bg-gray-700 text-cyan-300 text-xs font-semibold px-3 py-1 rounded-full">{genre.name}</span>
+                        <Link to={`/genre/${genre.id}/${genre.name}`} key={genre.id} className="bg-slate-200 dark:bg-slate-700 text-teal-700 dark:text-teal-300 text-xs font-semibold px-3 py-1 rounded-full hover:bg-teal-200 dark:hover:bg-teal-600 transition-colors">{genre.name}</Link>
                     ))}
                 </div>
                  {auth?.isAuthenticated && (
-                    <button onClick={handleWatchlistToggle} className={`mt-6 font-semibold py-2 px-6 rounded-full transition duration-300 flex items-center space-x-2 ${isMovieInWatchlist ? 'bg-amber-500 hover:bg-amber-600' : 'bg-cyan-500 hover:bg-cyan-600'} text-white`}>
+                    <button onClick={handleWatchlistToggle} className={`mt-6 font-semibold py-2 px-6 rounded-full transition duration-300 flex items-center gap-2 text-white ${isMovieInWatchlist ? 'bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700' : 'bg-gradient-to-r from-teal-500 to-blue-600 hover:from-teal-600 hover:to-blue-700'}`}>
                         <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
                            <path fillRule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clipRule="evenodd"  className={isMovieInWatchlist ? 'hidden' : 'block'} />
                            <path d="M5 10a1 1 0 011-1h8a1 1 0 110 2H6a1 1 0 01-1-1z" className={!isMovieInWatchlist ? 'hidden' : 'block'}/>
                         </svg>
-                        <span>{isMovieInWatchlist ? 'Remove from Watchlist' : 'Add to Watchlist'}</span>
+                        <span>{isMovieInWatchlist ? t('movie.remove_watchlist') : t('movie.add_watchlist')}</span>
                     </button>
                 )}
             </div>
         </div>
 
         <div className="mt-12">
-            <h2 className="text-2xl font-bold mb-4">Overview</h2>
-            <p className="text-gray-300 leading-relaxed max-w-4xl">{movie.overview}</p>
+            <h2 className="text-3xl font-bold mb-4">{t('movie.overview')}</h2>
+            <p className="text-slate-700 dark:text-slate-300 leading-relaxed max-w-4xl">{movie.overview}</p>
         </div>
 
         <div className="mt-12">
-            <h2 className="text-2xl font-bold mb-6">Top Billed Cast</h2>
+            <h2 className="text-3xl font-bold mb-6">{t('movie.cast')}</h2>
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-6">
                 {credits.slice(0, 12).map(member => (
                     <CastMember key={member.id} member={member} />
@@ -141,40 +143,40 @@ const MovieDetailPage: React.FC = () => {
         </div>
         
         <div className="mt-12">
-            <h2 className="text-2xl font-bold mb-6">User Reviews</h2>
+            <h2 className="text-3xl font-bold mb-6">{t('movie.reviews')}</h2>
             <div className="max-w-4xl">
               {auth?.isAuthenticated ? (
-                  <form onSubmit={handleReviewSubmit} className="bg-gray-800 p-6 rounded-lg mb-8">
-                      <h3 className="text-xl font-semibold mb-4">Add Your Review</h3>
+                  <form onSubmit={handleReviewSubmit} className="bg-slate-100 dark:bg-slate-800 p-6 rounded-lg mb-8">
+                      <h3 className="text-xl font-semibold mb-4">{t('review.add_yours')}</h3>
                       <div className="mb-4">
-                          <label className="block mb-2">Rating</label>
+                          <label className="block mb-2 font-medium">{t('review.rating')}</label>
                           <div className="flex space-x-1">
                               {[1, 2, 3, 4, 5].map(star => (
-                                  <svg key={star} onClick={() => setReviewRating(star)} xmlns="http://www.w3.org/2000/svg" className={`h-8 w-8 cursor-pointer transition-colors ${reviewRating >= star ? 'text-yellow-400' : 'text-gray-600'}`} viewBox="0 0 20 20" fill="currentColor">
+                                  <svg key={star} onClick={() => setReviewRating(star)} xmlns="http://www.w3.org/2000/svg" className={`h-8 w-8 cursor-pointer transition-colors ${reviewRating >= star ? 'text-yellow-400' : 'text-slate-400 dark:text-slate-600 hover:text-yellow-300'}`} viewBox="0 0 20 20" fill="currentColor">
                                       <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
                                   </svg>
                               ))}
                           </div>
                       </div>
-                      <textarea value={reviewContent} onChange={e => setReviewContent(e.target.value)} placeholder="Write your review..." className="w-full bg-gray-700 p-3 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-cyan-500" rows={4}></textarea>
-                      <button type="submit" className="mt-4 bg-cyan-500 hover:bg-cyan-600 text-white font-semibold py-2 px-5 rounded-full transition duration-300">Submit Review</button>
+                      <textarea value={reviewContent} onChange={e => setReviewContent(e.target.value)} placeholder={t('review.placeholder')} className="w-full bg-slate-200 dark:bg-slate-700 p-3 rounded-md text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-teal-500" rows={4}></textarea>
+                      <button type="submit" className="mt-4 bg-gradient-to-r from-teal-500 to-blue-600 hover:from-teal-600 hover:to-blue-700 text-white font-semibold py-2 px-5 rounded-full transition duration-300">{t('review.submit')}</button>
                   </form>
               ) : (
-                  <div className="bg-gray-800 p-6 rounded-lg mb-8 text-center">
-                      <p><Link to="/login" className="text-cyan-400 font-semibold hover:underline">Log in</Link> to add your review.</p>
+                  <div className="bg-slate-100 dark:bg-slate-800 p-6 rounded-lg mb-8 text-center">
+                      <p><Link to="/login" className="text-teal-500 dark:text-teal-400 font-semibold hover:underline">{t('review.login_prompt')}</Link> {t('review.login_prompt_suffix')}</p>
                   </div>
               )}
               <div className="space-y-6">
                 {reviews.map((review, index) => (
-                    <div key={index} className="bg-gray-800 p-4 rounded-lg border-l-4 border-gray-700">
+                    <div key={index} className="bg-slate-100 dark:bg-slate-800 p-4 rounded-lg border-s-4 border-slate-300 dark:border-slate-700">
                         <div className="flex justify-between items-center">
                             <p className="font-bold text-lg">{review.author}</p>
-                            <span className="text-xs text-gray-400">{review.createdAt}</span>
+                            <span className="text-xs text-slate-500 dark:text-slate-400">{review.createdAt}</span>
                         </div>
                         <div className="my-2">
                            <StarRating rating={review.rating} />
                         </div>
-                        <p className="text-gray-300">{review.content}</p>
+                        <p className="text-slate-700 dark:text-slate-300">{review.content}</p>
                     </div>
                 ))}
               </div>
@@ -183,7 +185,7 @@ const MovieDetailPage: React.FC = () => {
 
         {similar.length > 0 && 
             <div className="mt-12">
-                <MovieList title="Similar Movies" movies={similar} />
+                <MovieList title={t('movie.similar')} movies={similar} />
             </div>
         }
       </div>

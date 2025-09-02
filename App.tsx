@@ -1,4 +1,5 @@
-import React from 'react';
+
+import React, { useContext } from 'react';
 import { HashRouter, Routes, Route } from 'react-router-dom';
 import Header from './components/Header';
 import Footer from './components/Footer';
@@ -10,11 +11,16 @@ import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import DiscoverPage from './pages/DiscoverPage';
 import WatchlistPage from './pages/WatchlistPage';
+import GenrePage from './pages/GenrePage';
+import AdminPage from './pages/AdminPage';
+import { AuthContext } from './contexts/AuthContext';
 
 const App: React.FC = () => {
+  const auth = useContext(AuthContext);
+
   return (
     <HashRouter>
-      <div className="flex flex-col min-h-screen bg-gray-900 text-gray-100">
+      <div className="flex flex-col min-h-screen">
         <Header />
         <main className="flex-grow container mx-auto px-4 py-8">
           <Routes>
@@ -26,6 +32,9 @@ const App: React.FC = () => {
             <Route path="/register" element={<RegisterPage />} />
             <Route path="/discover" element={<DiscoverPage />} />
             <Route path="/watchlist" element={<WatchlistPage />} />
+            <Route path="/genre/:genreId/:genreName" element={<GenrePage />} />
+            {/* Simple mock auth check for admin page */}
+            {auth?.isAuthenticated && <Route path="/admin" element={<AdminPage />} />}
           </Routes>
         </main>
         <Footer />
