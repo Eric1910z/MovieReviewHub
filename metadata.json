@@ -1,0 +1,5 @@
+{
+  "name": "MovieReviewHub",
+  "description": "A modern web application for discovering, reviewing, and discussing movies. It provides detailed information on movies, actors, and directors, powered by The Movie Database (TMDb) API.",
+  "requestFramePermissions": []
+}
