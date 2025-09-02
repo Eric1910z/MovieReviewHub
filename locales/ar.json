@@ -76,5 +76,6 @@
     "admin.user_id": "معرف المستخدم",
     "admin.username": "اسم المستخدم",
     "admin.joined": "تاريخ الانضمام",
-    "admin.actions": "الإجراءات"
+    "admin.actions": "الإجراءات",
+    "admin.delete_user": "حذف"
 }

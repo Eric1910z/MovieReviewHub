@@ -14,7 +14,7 @@ const MovieCard: React.FC<MovieCardProps> = ({ movie }) => {
     : 'https://via.placeholder.com/500x750?text=No+Image';
 
   return (
-    <Link to={`/movie/${movie.id}`} className="group block bg-white dark:bg-slate-800 rounded-lg overflow-hidden shadow-lg hover:shadow-xl hover:shadow-teal-500/20 dark:shadow-slate-950/50 transform hover:-translate-y-1.5 transition-all duration-300">
+    <Link to={`/movie/${movie.id}`} className="group block bg-white dark:bg-slate-800 rounded-lg overflow-hidden shadow-lg dark:shadow-black/25 hover:shadow-xl hover:shadow-teal-500/20 dark:hover:shadow-teal-400/20 transform hover:-translate-y-1.5 transition-all duration-300">
       <div className="relative">
         <img src={posterUrl} alt={movie.title} className="w-full h-auto aspect-[2/3] object-cover" />
         <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center p-4">

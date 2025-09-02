@@ -76,5 +76,6 @@
     "admin.user_id": "User ID",
     "admin.username": "Username",
     "admin.joined": "Joined Date",
-    "admin.actions": "Actions"
+    "admin.actions": "Actions",
+    "admin.delete_user": "Delete"
 }

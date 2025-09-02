@@ -51,7 +51,9 @@ const AdminPage: React.FC = () => {
                   <td className="p-4 font-medium">{user.username}</td>
                   <td className="p-4 text-slate-600 dark:text-slate-400">{user.joined}</td>
                   <td className="p-4 text-end">
-                    <button className="text-red-500 hover:underline">{t('nav.logout')}</button>
+                    <button className="bg-red-500 hover:bg-red-600 text-white font-semibold text-sm py-1 px-3 rounded-md transition-colors">
+                        {t('admin.delete_user')}
+                    </button>
                   </td>
                 </tr>
               ))}
