@@ -7,17 +7,26 @@ const LoginPage: React.FC = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
   const auth = useContext(AuthContext);
   const navigate = useNavigate();
   const { t } = useTranslation();
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (username.trim() && password.trim()) {
-      auth?.login(username);
-      navigate('/');
-    } else {
+    if (!username.trim() || !password.trim()) {
       setError(t('login.error_credentials'));
+      return;
+    }
+    setLoading(true);
+    setError('');
+    try {
+      await auth?.login(username, password);
+      navigate('/');
+    } catch (err) {
+      setError(t('login.error_invalid'));
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -54,9 +63,10 @@ const LoginPage: React.FC = () => {
           {error && <p className="text-red-500 dark:text-red-400 text-sm">{error}</p>}
           <button
             type="submit"
-            className="w-full bg-gradient-to-r from-teal-500 to-blue-600 hover:from-teal-600 hover:to-blue-700 text-white font-bold py-3 px-4 rounded-md transition duration-300"
+            disabled={loading}
+            className="w-full bg-gradient-to-r from-teal-500 to-blue-600 hover:from-teal-600 hover:to-blue-700 text-white font-bold py-3 px-4 rounded-md transition duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {t('nav.login')}
+            {loading ? 'Logging in...' : t('nav.login')}
           </button>
         </form>
         <p className="text-center text-slate-500 dark:text-slate-400 mt-6">

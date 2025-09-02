@@ -1,4 +1,5 @@
-import React, { createContext, useState, ReactNode } from 'react';
+import React, { createContext, useState, ReactNode, useEffect } from 'react';
+import { loginUser } from '../services/apiService';
 
 interface User {
   name: string;
@@ -7,7 +8,7 @@ interface User {
 interface AuthContextType {
   isAuthenticated: boolean;
   user: User | null;
-  login: (username: string) => void;
+  login: (username: string, password: string) => Promise<void>;
   logout: () => void;
 }
 
@@ -21,16 +22,30 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
   const [user, setUser] = useState<User | null>(null);
 
-  // Mock login function
-  const login = (username: string) => {
-    setIsAuthenticated(true);
-    setUser({ name: username });
+  useEffect(() => {
+      const storedUser = localStorage.getItem('user');
+      if (storedUser) {
+          setUser(JSON.parse(storedUser));
+          setIsAuthenticated(true);
+      }
+  }, []);
+
+  const login = async (username: string, password: string) => {
+    try {
+        const userData = await loginUser({ username, password });
+        setIsAuthenticated(true);
+        setUser({ name: userData.username });
+        localStorage.setItem('user', JSON.stringify({ name: userData.username }));
+    } catch (error) {
+        console.error("Login failed:", error);
+        throw error;
+    }
   };
 
-  // Mock logout function
   const logout = () => {
     setIsAuthenticated(false);
     setUser(null);
+    localStorage.removeItem('user');
   };
 
   const value = { isAuthenticated, user, login, logout };

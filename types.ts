@@ -54,8 +54,10 @@ export interface GenreListResponse {
 }
 
 export interface Review {
-    author: string;
+    id?: number;
+    username: string;
     rating: number;
     content: string;
-    createdAt: string;
+    created_at: string;
+    movie_id?: number;
 }

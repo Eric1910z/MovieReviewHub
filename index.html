@@ -5,6 +5,21 @@
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>MovieReviewHub</title>
+    <script>
+      // Immediately set the theme on the <html> tag to prevent FOUC
+      (function() {
+        try {
+          var theme = localStorage.getItem('theme');
+          if (theme === 'dark' || (!theme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark');
+            document.documentElement.style.colorScheme = 'dark';
+          } else {
+            document.documentElement.classList.remove('dark');
+            document.documentElement.style.colorScheme = 'light';
+          }
+        } catch (_) {}
+      })();
+    </script>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
       // Configure Tailwind CSS to use the 'class' strategy for dark mode
@@ -16,13 +31,6 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&display=swap" rel="stylesheet">
     <style>
-      /* Set color scheme for browser UI consistency (scrollbars, form controls) */
-      html {
-        color-scheme: light;
-      }
-      html.dark {
-        color-scheme: dark;
-      }
       /* Base styles for both themes applied to the body */
       body {
         font-family: 'Inter', sans-serif;

@@ -1,26 +1,38 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useTranslation } from '../hooks/useTranslation';
+import { registerUser } from '../services/apiService';
 
 const RegisterPage: React.FC = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const { t } = useTranslation();
 
-  const handleRegister = (e: React.FormEvent) => {
+  const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError('');
     if (password !== confirmPassword) {
       setError(t('register.error_password_match'));
       return;
     }
-    if (username.trim() && password.trim()) {
-      alert(t('register.success_alert'));
-      navigate('/login');
-    } else {
+    if (!username.trim() || !password.trim()) {
       setError(t('register.error_all_fields'));
+      return;
+    }
+
+    setLoading(true);
+    try {
+        await registerUser({ username, password });
+        alert(t('register.success_alert'));
+        navigate('/login');
+    } catch (err: any) {
+        setError(err.message || t('register.error_fallback'));
+    } finally {
+        setLoading(false);
     }
   };
 
@@ -66,9 +78,10 @@ const RegisterPage: React.FC = () => {
           {error && <p className="text-red-500 dark:text-red-400 text-sm">{error}</p>}
           <button
             type="submit"
-            className="w-full bg-gradient-to-r from-teal-500 to-blue-600 hover:from-teal-600 hover:to-blue-700 text-white font-bold py-3 px-4 rounded-md transition duration-300"
+            disabled={loading}
+            className="w-full bg-gradient-to-r from-teal-500 to-blue-600 hover:from-teal-600 hover:to-blue-700 text-white font-bold py-3 px-4 rounded-md transition duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {t('register.create_account_button')}
+            {loading ? 'Creating Account...' : t('register.create_account_button')}
           </button>
         </form>
         <p className="text-center text-slate-500 dark:text-slate-400 mt-6">

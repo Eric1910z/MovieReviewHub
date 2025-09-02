@@ -2,6 +2,7 @@ import React, { useState, useEffect, useContext } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import type { Movie, Cast, Movie as SimilarMovie, Review } from '../types';
 import { getMovieDetails, getMovieCredits, getSimilarMovies } from '../services/tmdbService';
+import { getReviews, postReview } from '../services/apiService';
 import { IMAGE_BASE_URL } from '../constants';
 import Spinner from '../components/Spinner';
 import StarRating from '../components/StarRating';
@@ -11,17 +12,12 @@ import { AuthContext } from '../contexts/AuthContext';
 import { WatchlistContext } from '../contexts/WatchlistContext';
 import { useTranslation } from '../hooks/useTranslation';
 
-const initialReviews: Review[] = [
-    { author: 'CinemaFan92', rating: 9.2, content: 'An absolute masterpiece! The visuals were stunning and the story was compelling. A must-watch!', createdAt: '2 days ago' },
-    { author: 'MovieCriticPro', rating: 7.8, content: 'A solid film with great performances, though the plot was a bit predictable. Still, a very enjoyable experience.', createdAt: '5 days ago' }
-];
-
 const MovieDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const [movie, setMovie] = useState<Movie | null>(null);
   const [credits, setCredits] = useState<Cast[]>([]);
   const [similar, setSimilar] = useState<SimilarMovie[]>([]);
-  const [reviews, setReviews] = useState<Review[]>(initialReviews);
+  const [reviews, setReviews] = useState<Review[]>([]);
   const [loading, setLoading] = useState(true);
   
   const [reviewContent, setReviewContent] = useState('');
@@ -32,6 +28,16 @@ const MovieDetailPage: React.FC = () => {
   const { t } = useTranslation();
 
   const isMovieInWatchlist = movie ? watchlist?.isMovieInWatchlist(movie.id) : false;
+
+  const fetchMovieReviews = async () => {
+      if (!id) return;
+      try {
+          const fetchedReviews = await getReviews(parseInt(id, 10));
+          setReviews(fetchedReviews);
+      } catch (error) {
+          console.error("Failed to fetch reviews:", error);
+      }
+  };
 
   useEffect(() => {
     const fetchDetails = async () => {
@@ -46,7 +52,7 @@ const MovieDetailPage: React.FC = () => {
         setMovie(movieDetails);
         setCredits(movieCredits.cast);
         setSimilar(similarMovies.results);
-        setReviews(initialReviews); // Reset reviews on new movie load
+        await fetchMovieReviews();
       } catch (error) {
         console.error("Failed to fetch movie details:", error);
       } finally {
@@ -58,18 +64,24 @@ const MovieDetailPage: React.FC = () => {
     fetchDetails();
   }, [id]);
   
-  const handleReviewSubmit = (e: React.FormEvent) => {
+  const handleReviewSubmit = async (e: React.FormEvent) => {
       e.preventDefault();
-      if (reviewContent.trim() && reviewRating > 0 && auth?.user) {
-          const newReview: Review = {
-              author: auth.user.name,
+      if (reviewContent.trim() && reviewRating > 0 && auth?.user && id) {
+          const reviewData = {
+              username: auth.user.name,
               rating: reviewRating * 2, // convert 5-star to 10-point
               content: reviewContent,
-              createdAt: 'Just now'
           };
-          setReviews([newReview, ...reviews]);
-          setReviewContent('');
-          setReviewRating(0);
+          try {
+              await postReview(parseInt(id, 10), reviewData);
+              // Refresh reviews after posting
+              await fetchMovieReviews();
+              setReviewContent('');
+              setReviewRating(0);
+          } catch(error) {
+              console.error('Failed to submit review', error);
+              alert('Failed to submit review.');
+          }
       }
   };
 
@@ -152,7 +164,7 @@ const MovieDetailPage: React.FC = () => {
                           <label className="block mb-2 font-medium">{t('review.rating')}</label>
                           <div className="flex space-x-1">
                               {[1, 2, 3, 4, 5].map(star => (
-                                  <svg key={star} onClick={() => setReviewRating(star)} xmlns="http://www.w3.org/2000/svg" className={`h-8 w-8 cursor-pointer transition-colors ${reviewRating >= star ? 'text-yellow-400' : 'text-slate-400 dark:text-slate-600 hover:text-yellow-300'}`} viewBox="0 0 20 20" fill="currentColor">
+                                  <svg key={star} onClick={() => setReviewRating(star)} xmlns="http://www.w3.org/2000/svg" className={`h-8 w-8 cursor-pointer transition-colors ${reviewRating >= star ? 'text-yellow-400' : 'text-slate-400 dark:text-slate-500 hover:text-yellow-300'}`} viewBox="0 0 20 20" fill="currentColor">
                                       <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
                                   </svg>
                               ))}
@@ -167,11 +179,11 @@ const MovieDetailPage: React.FC = () => {
                   </div>
               )}
               <div className="space-y-6">
-                {reviews.map((review, index) => (
-                    <div key={index} className="bg-slate-100 dark:bg-slate-800 p-4 rounded-lg border-s-4 border-slate-300 dark:border-slate-700">
+                {reviews.map((review) => (
+                    <div key={review.id} className="bg-slate-100 dark:bg-slate-800 p-4 rounded-lg border-s-4 border-slate-300 dark:border-slate-700">
                         <div className="flex justify-between items-center">
-                            <p className="font-bold text-lg">{review.author}</p>
-                            <span className="text-xs text-slate-500 dark:text-slate-400">{review.createdAt}</span>
+                            <p className="font-bold text-lg">{review.username}</p>
+                            <span className="text-xs text-slate-500 dark:text-slate-400">{new Date(review.created_at).toLocaleDateString()}</span>
                         </div>
                         <div className="my-2">
                            <StarRating rating={review.rating} />

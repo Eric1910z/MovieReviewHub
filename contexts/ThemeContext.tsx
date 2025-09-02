@@ -28,6 +28,7 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
     // Use a more robust method to set the theme class
     root.classList.remove('light', 'dark');
     root.classList.add(theme);
+    root.style.colorScheme = theme; // Ensure browser UI matches theme
     localStorage.setItem('theme', theme);
   }, [theme]);
 
